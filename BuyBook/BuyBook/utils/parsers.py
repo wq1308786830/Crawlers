@@ -1,6 +1,6 @@
 class Parsers:
     dd_selector_str = '//div[@id="search_nature_rg"]/ul/li'
-    amaze_selector_str = '//ul[@id="s-results-list-atf"]/li'
+    amaze_selector_str = '//div[@class="s-result-list s-search-results sg-row"]/div'
     jd_selector_str = '//div[@id="J_goodsList"]/ul/li'
 
     def get_dd_data(self, resp):
@@ -27,29 +27,35 @@ class Parsers:
     def get_amaze_data(self, resp):
         data = []
         for item in resp.selector.xpath(self.amaze_selector_str):
-            book_name = item.xpath('.//h2[contains(@class, "s-access-title")]/text()').extract_first()
-            book_info = item.xpath('string(.//div[@class="a-fixed-left-grid-col a-col-right"]/div/div[2])')
-            author = str(book_info.extract())[2:-2]
-            money = item.xpath('.//span[contains(@class, "s-price")]/text()').extract_first()
+            book_name = item.xpath('.//span[contains(@class, "a-text-normal")]/text()').extract_first()
+            book_info = item.xpath(
+                './/div[@class="a-row a-size-base a-color-secondary"]/span[@class="a-size-base"]/text()').extract()
+            author = "，".join([book_info[i] for i in range(len(book_info)) if i % 2 == 0])
+            money = item.xpath('.//span[@class="a-price"]/span[contains(@class, "a-offscreen")]/text()').extract_first()
             # money = float(money[1:].replace(',', '')) if money else 0.0
-            publisher = str(book_info.extract())[2:-2]
-            buy_count = item.xpath('.//div[contains(@class, "a-span-last")]/div/a/text()').extract_first()
-            time = book_info.extract()[0]
-            like = item.xpath('.//i[@class="a-icon-star"]/span/text()').extract_first()
-            href = item.xpath('.//a[contains(@class, "s-access-detail-page")]/@href').extract_first()
+            publisher = 'None'
+            buy_count = item.css('.a-spacing-top-micro .a-link-normal').xpath(
+                './/span[@class="a-size-base"]/text()').extract_first()
+            time = item.xpath(
+                './/div[@class="a-row a-size-base a-color-secondary"]'
+                '/span[@class="a-size-base a-color-secondary a-text-normal"]/text()').extract_first()
+            like = item.css('.a-spacing-top-micro .a-declarative').xpath(
+                './/span[@class="a-icon-alt"]/text()').extract_first()
+            href = resp.meta['download_slot'] + item.xpath('.//span[@data-component-type="s-product-image"]'
+                                                           '/a[@class="a-link-normal"]/@href').extract_first()
             data.append([book_name, author, money, publisher, time, like, buy_count, href])
         return data
 
     def get_jd_data(self, resp):
         data = []
         for item in resp.selector.xpath(self.jd_selector_str):
-            book_name = item.xpath('string(.//div[@class="p-name"]/a/em)').extract_first()
+            book_name = item.xpath('string(.//div[contains(@class, "p-name")]/a/em)').extract_first()
             author = item.xpath('.//div[@class="p-bookdetails"]/span[@class="p-bi-name"]/a/text()').extract_first()
             money = item.xpath('.//div[@class="p-price"]/strong/i/text()').extract_first()
             money = money if money else 0.0  # 后续看能不能转换为float类型，方便excel统计
-            publisher = item.xpath('.//div[@class="p-shopnum"]/a/text()').extract_first()
+            publisher = item.xpath('.//a[@class="curr-shop"]/text()').extract_first()
             buy_count = item.xpath('.//div[@class="p-commit"]/strong/a/text()').extract_first()
             time = item.xpath('.//div[@class="p-bookdetails"]/span[@class="p-bi-date"]/text()').extract_first()
-            href = item.xpath('string(.//div[@class="p-name"]/a/@href)').extract_first()
+            href = item.xpath('string(.//div[contains(@class, "p-name")]/a/@href)').extract_first()
             data.append([book_name, author, money, publisher, time, '', buy_count, href])
         return data
