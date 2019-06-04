@@ -1,2 +1,4 @@
 .idea/
 BuyBook/static_files
+
+*.pyc

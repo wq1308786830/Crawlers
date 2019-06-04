@@ -1,7 +1,6 @@
 import os
 from multiprocessing import Pool
 
-import win32com.client as win32
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
@@ -9,9 +8,6 @@ from openpyxl.utils import get_column_letter
 
 class ExcelOperations:
     wb = Workbook()  # wb作为一个类对象被使用,在方法内部使用会造成比如创建sheet覆盖上个sheet的问题.
-
-    xls_dir = 'E:\\ProgramData\\GitHub\\PyLang\\Crawlers\\BuyBook\\static_files\\excels\\xls\\'
-    xlsx_dir = 'E:\\ProgramData\\GitHub\\PyLang\\Crawlers\\BuyBook\\static_files\\excels\\xlsx\\'
 
     def __int__(self):
         pass
@@ -32,46 +28,6 @@ class ExcelOperations:
                     file_arr.append(root + '\\' + file)
                     print("根目录：" + root + '，文件夹列表：' + str(dirs) + '，文件：' + str(file))
         return file_arr
-
-    def xlstoxlsx(self, file_list):
-        """
-        转换xls文件为xlsx
-        :param file_list: 列表类型的文件名数组
-        :return:
-        """
-        excel = win32.gencache.EnsureDispatch('Excel.Application')
-        for f in file_list:
-            try:
-                wb = excel.Workbooks.Open(f)
-                name = f.split('\\')[-1]
-                # FileFormat = 51 is for .xlsx extension, FileFormat = 56 is for .xls extension
-                wb.SaveAs(self.xlsx_dir + name + "x", FileFormat=51)
-                wb.Close()
-                print("\n转换xlsx文件为xls成功：" + name + "x")
-            except e:
-                print(e)
-
-        excel.Application.Quit()
-
-    def xlsxtoxls(self, file_list):
-        """
-        转换xlsx文件为xls
-        :param file_list: 列表类型的文件名数组
-        :return:
-        """
-        excel = win32.gencache.EnsureDispatch('Excel.Application')
-        for f in file_list:
-            try:
-                wb = excel.Workbooks.Open(f)
-                name = f.split('\\')[-1]
-                # FileFormat = 51 is for .xlsx extension, FileFormat = 56 is for .xls extension
-                wb.SaveAs(self.xls_dir + name[0:-1], FileFormat=56)
-                wb.Close()
-                print("\n转换xlsx文件为xls成功：" + name[0:-1])
-            except e:
-                print(e)
-
-        excel.Application.Quit()
 
     def get_data(self, filename):
         """

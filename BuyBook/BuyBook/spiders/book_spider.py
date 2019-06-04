@@ -7,7 +7,7 @@ from ..utils.write_excel import ExcelRW
 class BookSpider(scrapy.Spider):
     name = 'BuyBook'
 
-    params = {'keywords': 'go'}
+    params = {'keywords': 'go语言'}
     allow_domains = [
         'https://www.amazon.cn/s',
         'http://search.dangdang.com/',
@@ -17,7 +17,7 @@ class BookSpider(scrapy.Spider):
 
     dd_url = allow_domains[1] + '?key=' + params['keywords'] + '&act=input'
 
-    jd_url = allow_domains[2] + '?keyword=' + params['keywords']
+    jd_url = allow_domains[2] + '?enc=utf-8&keyword=' + params['keywords']
 
     urls = [amazon_url, dd_url, jd_url]
 
@@ -60,6 +60,10 @@ class BookSpider(scrapy.Spider):
         elif page == 'search.jd.com':
             data = parsers.get_jd_data(response)
             excel.save_excel('JD Book', data, excel_path + self.params['keywords'] + '_book.xlsx', header_data)
+
+            goods_len = len(response.selector.xpath('//div[@id="J_goodsList"]/ul/li'))
+            if goods_len == 0:
+                return None
 
             max_page = 200
             for i in range(2, max_page + 1):
