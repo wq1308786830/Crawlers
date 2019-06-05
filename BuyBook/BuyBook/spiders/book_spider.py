@@ -7,7 +7,7 @@ from ..utils.write_excel import ExcelRW
 class BookSpider(scrapy.Spider):
     name = 'BuyBook'
 
-    params = {'keywords': 'go语言'}
+    params = {'keywords': '解忧杂货店'}
     allow_domains = [
         'https://www.amazon.cn/s',
         'http://search.dangdang.com/',
@@ -61,12 +61,9 @@ class BookSpider(scrapy.Spider):
             data = parsers.get_jd_data(response)
             excel.save_excel('JD Book', data, excel_path + self.params['keywords'] + '_book.xlsx', header_data)
 
-            goods_len = len(response.selector.xpath('//div[@id="J_goodsList"]/ul/li'))
-            if goods_len == 0:
-                return None
-
-            max_page = 200
-            for i in range(2, max_page + 1):
+            # 京东页码比较特别，比如：page=1返回第一组数据显示在第一页，page=2时返回第二组数据但是与第一组数据一起显示在第一页，以此类推
+            max_page = int(response.xpath('//div[@id="J_topPage"]/span[@class="fp-text"]/i/text()').extract_first()) * 2
+            for i in range(4, max_page, 2):
                 next_page = response.urljoin(self.urls[2] + '&page=' + str(i))
                 yield scrapy.Request(next_page, callback=self.parse)
 
